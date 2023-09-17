@@ -19,7 +19,7 @@ WITH tab AS (
 
 SELECT
     visitor_id,
-    visit_date,
+    date_trunc('day', visit_date) as visit_date,
     utm_source,
     utm_medium,
     utm_campaign,
