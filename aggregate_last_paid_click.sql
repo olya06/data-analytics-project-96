@@ -1,4 +1,4 @@
---Витрина last_paid_click
+--витрина last_paid_click
 WITH last_paid_click AS (
     SELECT
         s.visitor_id,
@@ -9,7 +9,7 @@ WITH last_paid_click AS (
         created_at,
         closing_reason,
         status_id,
-        date_trunc('day', visit_date) AS visit_date,
+        date(visit_date) AS visit_date,
         coalesce(amount, 0) AS amount,
         row_number()
             OVER (PARTITION BY s.visitor_id ORDER BY visit_date DESC)
@@ -20,10 +20,10 @@ WITH last_paid_click AS (
     WHERE s.medium NOT IN ('organic')
 ),
 
---Траты на рекламу за 1 день
+-- Траты на рекламу за 1 день
 advertising AS (
     SELECT
-        date_trunc('day', visit_date) AS visit_date,
+        date(visit_date) AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
@@ -76,7 +76,7 @@ SELECT
     utm_source,
     utm_medium,
     utm_campaign,
-    to_char(visit_date, 'YYYY-MM-DD') AS visit_date,
+    date(visit_date) AS visit_date,
     sum(visitors_count) AS visitors_count,
     sum(total_cost) AS total_cost,
     sum(leads_count) AS leads_count,
