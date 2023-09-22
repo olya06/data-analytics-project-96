@@ -166,3 +166,35 @@ select
 from big_tab
 group by 1
 having sum(total_cost)>0;
+
+-- Через какое время после запуска компании маркетинг может анализировать компанию используя ваш дашборд?
+-- Можно посчитать за сколько дней с момента перехода по рекламе закрывается 90% лидов.
+with tab as (
+    select
+        s.visitor_id,
+        s.visit_date as visit_date,
+        s.source as utm_source,
+        l.lead_id,
+        l.created_at as created_at,
+        row_number() over (partition by s.visitor_id order by s.visit_date desc)
+        as rn
+    from sessions s
+    left join leads l
+        on
+            s.visitor_id = l.visitor_id
+            and s.visit_date <= l.created_at
+    where s.source in ('yandex', 'vk', 'telegram')
+)
+select
+    utm_source,
+    case
+        when utm_source = 'yandex'
+        then percentile_disc(0.9) within group (order by created_at - visit_date)
+        when utm_source = 'vk'
+        then percentile_disc(0.9) within group (order by created_at - visit_date)
+        when utm_source = 'telegram'
+        then percentile_disc(0.9) within group (order by created_at - visit_date)        
+    end as percent_90_leads
+from tab
+where rn = 1
+group by 1;
