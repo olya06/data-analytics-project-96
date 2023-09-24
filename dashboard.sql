@@ -127,7 +127,9 @@ ORDER BY
             round(sum(coalesce(purchases_count, 0))* 100.00 / sum(coalesce(leads_count, 0)), 2)
     end as lead_from_paid
 from big_tab
-group by 1;
+group by 1
+having round(sum(leads_count) * 100.00 / sum(visitors_count), 2) !=0
+order by lead_from_paid desc;
 
 -- Сколько мы тратим по разным каналам в динамике?
 /*aggregate_last_paid_click*/
