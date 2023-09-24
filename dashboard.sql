@@ -155,6 +155,24 @@ from big_tab
 group by 1
 having sum(total_cost)>0 or sum(revenue)>0;
 
+-- Сколько кликов на рекламу совершается и траты на рекламу по utm_campaign 
+with tab as (
+select source utm_source, campaign utm_campaign, count(*) count_click, null as daily_spent from sessions s
+group by 1, 2
+),
+tab2 as (
+select utm_source, utm_campaign, sum(daily_spent) daily_spent, null as count_click from ya_ads ya
+group by 1, 2
+union
+select utm_source, utm_campaign, sum(daily_spent) daily_spent, null as count_click from vk_ads va
+group by 1, 2
+order by 1
+)
+select tab2.utm_source, tab2.utm_campaign, tab2.daily_spent, tab.count_click from tab
+inner join tab2
+on tab.utm_campaign = tab2.utm_campaign and tab.utm_source = tab2.utm_source
+order by 1, 3 desc
+
 -- Таблица с расчетами cpu/cpl/cppu/roi по utm_source
 -- /*aggregate_last_paid_click*/
 select
