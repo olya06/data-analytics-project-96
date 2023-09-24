@@ -167,6 +167,12 @@ from big_tab
 group by 1
 having sum(total_cost)>0;
 
+-- Расчет среднего, минимального и максимального чека по формату обучения и дате
+select to_char(created_at, 'YYYY-MM-DD'), learning_format, avg(amount) avg_amount, min(amount) min_amount, max(amount) max_amount from leads
+where status_id = 142
+group by 1, learning_format
+order by 2, 1
+    
 -- Через какое время после запуска компании маркетинг может анализировать компанию используя ваш дашборд?
 -- Можно посчитать за сколько дней с момента перехода по рекламе закрывается 90% лидов.
 with tab as (
