@@ -46,7 +46,7 @@ advertising AS (
         utm_source,
         utm_medium,
         utm_campaign
-    UNION
+    UNION ALL
     SELECT
         campaign_date AS visit_date,
         utm_source,
@@ -58,7 +58,7 @@ advertising AS (
         null AS purchases_count,
         daily_spent AS total_cost
     FROM vk_ads
-    UNION
+    UNION ALL
     SELECT
         campaign_date AS visit_date,
         utm_source,
