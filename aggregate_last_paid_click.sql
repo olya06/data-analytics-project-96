@@ -21,12 +21,12 @@ WITH last_paid_click AS (
 ),
 
 -- Траты на рекламу за 1 день
-advertising AS (
+count_buy AS (
     SELECT
-        date(visit_date) AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
+        date(visit_date) AS visit_date,
         count(visitor_id) AS visitors_count,
         sum(CASE WHEN lead_id IS NOT null THEN 1 ELSE 0 END) AS leads_count,
         sum(
@@ -37,8 +37,7 @@ advertising AS (
                 ELSE 0
             END
         ) AS purchases_count,
-        sum(amount) AS revenue,
-        null AS total_cost
+        sum(amount) AS revenue
     FROM last_paid_click
     WHERE last_paid_click.rn = 1
     GROUP BY
@@ -46,48 +45,50 @@ advertising AS (
         utm_source,
         utm_medium,
         utm_campaign
-    UNION ALL
+),
+
+advertising AS (
     SELECT
         campaign_date AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        null AS revenue,
-        null AS visitors_count,
-        null AS leads_count,
-        null AS purchases_count,
-        daily_spent AS total_cost
+        sum(daily_spent) AS total_cost
     FROM vk_ads
+    GROUP BY 1, 2, 3, 4
     UNION ALL
     SELECT
         campaign_date AS visit_date,
         utm_source,
         utm_medium,
         utm_campaign,
-        null AS revenue,
-        null AS visitors_count,
-        null AS leads_count,
-        null AS purchases_count,
-        daily_spent AS total_cost
+        sum(daily_spent) AS total_cost
     FROM ya_ads
+    GROUP BY 1, 2, 3, 4
 )
 
 SELECT
-    utm_source,
-    utm_medium,
-    utm_campaign,
-    date(visit_date) AS visit_date,
+    cb.utm_source,
+    cb.utm_medium,
+    cb.utm_campaign,
+    date(cb.visit_date) AS visit_date,
     sum(visitors_count) AS visitors_count,
     sum(total_cost) AS total_cost,
     sum(leads_count) AS leads_count,
     sum(purchases_count) AS purchases_count,
     sum(revenue) AS revenue
-FROM advertising
+FROM advertising AS a
+RIGHT JOIN count_buy AS cb
+    ON
+        a.visit_date = cb.visit_date
+        AND a.utm_source = cb.utm_source
+        AND a.utm_medium = cb.utm_medium
+        AND a.utm_campaign = cb.utm_campaign
 GROUP BY
-    visit_date,
-    utm_source,
-    utm_medium,
-    utm_campaign
+    cb.visit_date,
+    cb.utm_source,
+    cb.utm_medium,
+    cb.utm_campaign
 ORDER BY
     revenue DESC NULLS LAST,
     visit_date ASC,
