@@ -110,8 +110,9 @@ advertising AS (
         sum(daily_spent) AS total_cost
     FROM ya_ads
     GROUP BY 1, 2, 3, 4
-)
+), 
 
+big_tab as (
 SELECT
     cb.utm_source,
     cb.utm_medium,
@@ -158,7 +159,7 @@ SELECT
             )
     END AS lead_from_paid
 FROM big_tab
-/*GROUP BY 1*/
+-- GROUP BY 1
 HAVING round(sum(leads_count) * 100.00 / sum(visitors_count), 2) != 0
 ORDER BY lead_from_paid DESC;
 
@@ -253,7 +254,6 @@ group by 1, learning_format
 order by 2, 1;
     
 -- Через какое время после запуска компании маркетинг может анализировать компанию используя ваш дашборд?
--- Можно посчитать за сколько дней с момента перехода по рекламе закрывается 90% лидов.
 with tab as (
     select
         s.visitor_id,
@@ -270,15 +270,15 @@ with tab as (
             and s.visit_date <= l.created_at
     where s.source in ('yandex', 'vk', 'telegram')
 )
-
+-- Можно посчитать за сколько дней с момента перехода по рекламе закрывается 90% лидов /* по utm_source*/.
 select
-    utm_source,
+    /*utm_source,
     case
         when utm_source = 'yandex'
-            then
+            then*/
                 percentile_disc(0.9) within group (
                     order by created_at - visit_date
-                )
+                )/*
         when utm_source = 'vk'
             then
                 percentile_disc(0.9) within group (
@@ -289,7 +289,7 @@ select
                 percentile_disc(0.9) within group (
                     order by created_at - visit_date
                 )
-    end as percent_90_leads
+    end*/ as percent_90_leads
 from tab
 where rn = 1
-group by 1;
+--group by 1;
