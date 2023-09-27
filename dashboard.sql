@@ -142,9 +142,9 @@ ORDER BY
     utm_medium ASC,
     utm_campaign ASC
 )
-
+-- конверсия из клика в лид, из лида в оплату общая /*по utm_source*/
 SELECT
-    utm_source,
+    /*utm_source,*/
     round(
         sum(leads_count) * 100.00 / sum(visitors_count), 2
     ) AS visitor_from_lead,
@@ -158,19 +158,14 @@ SELECT
             )
     END AS lead_from_paid
 FROM big_tab
-GROUP BY 1
+/*GROUP BY 1*/
 HAVING round(sum(leads_count) * 100.00 / sum(visitors_count), 2) != 0
 ORDER BY lead_from_paid DESC;
 
 -- Сколько мы тратим по разным каналам в динамике?
 /*aggregate_last_paid_click*/
 select
-    case
-        when extract(day from visit_date) between 1 and 7 then 1
-        when extract(day from visit_date) between 8 and 14 then 2
-        when extract(day from visit_date) between 15 and 21 then 3
-        else 4
-    end as weekpart,
+    to_char(visit_date, 'WW') as weekpart,
     sum(total_cost),
     utm_source
 from big_tab
